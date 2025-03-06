@@ -1,8 +1,7 @@
 #include "coord_sol.h"
 #include "coord.h"
 
-
-int is_na_station(std::string code)
+int is_na_station(std::string code) /* north america */
 {
     return (
         code.find("AIA") != std::string::npos ||
@@ -29,7 +28,7 @@ int is_na_station(std::string code)
         code.find("HND") != std::string::npos ||
         code.find("JAM") != std::string::npos ||
         code.find("MTQ") != std::string::npos ||
-        code.find("MEX") != std::string::npos ||
+        //code.find("MEX") != std::string::npos || => USE ITRF2014(2010.0)
         code.find("MSR") != std::string::npos ||
         code.find("ANT") != std::string::npos ||
         code.find("NIC") != std::string::npos ||
@@ -46,9 +45,32 @@ int is_na_station(std::string code)
         code.find("TTO") != std::string::npos ||
         code.find("TCA") != std::string::npos ||
         code.find("USA") != std::string::npos ||
-        code.find("VIR") != std::string::npos
+        code.find("VIR") != std::string::npos ||
+        code.find("BLZ") != std::string::npos ||
+        code.find("CRI") != std::string::npos ||
+        code.find("COS") != std::string::npos
         );
 }
+int is_sa_station(std::string code) /* south america */
+{
+    return (
+        code.find("ARG") != std::string::npos ||
+        code.find("BOL") != std::string::npos ||
+        code.find("BRA") != std::string::npos ||
+        code.find("CHL") != std::string::npos ||
+        code.find("COL") != std::string::npos ||
+        code.find("ECU") != std::string::npos ||
+        code.find("FLK") != std::string::npos ||
+        code.find("GUF") != std::string::npos ||
+        code.find("GUY") != std::string::npos ||
+        code.find("PRY") != std::string::npos ||
+        code.find("PER") != std::string::npos ||
+        code.find("SUR") != std::string::npos ||
+        code.find("URY") != std::string::npos ||
+        code.find("VEN") != std::string::npos
+        );
+}
+
 
 int is_eu1_station(std::string code)
 {
@@ -937,6 +959,47 @@ int coord_t::convert_coord()
             convert_itrf2020_to_nad_2011(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
         }
     }
+    else if (code.find("ZAF") != std::string::npos)     /* ITRF1991(1994.0) */
+    {
+        /* output ITRF1991(1994.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 1994;
+        sprintf(buffer, "ITRF1991(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (code.find("TWN") != std::string::npos) /* ITRF2020(2023.0) */
+    {
+        /* output ITRF2020(2023.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2023.0;
+        sprintf(buffer, "ITRF2020(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* predict to ITRF2020 2023.0 epoch */
+        xyz_regional[0] = xyz_itrf2020[0] + vxyz_itrf2020[0] * (epoch_regional - epoch_itrf2020);
+        xyz_regional[1] = xyz_itrf2020[1] + vxyz_itrf2020[1] * (epoch_regional - epoch_itrf2020);
+        xyz_regional[2] = xyz_itrf2020[2] + vxyz_itrf2020[2] * (epoch_regional - epoch_itrf2020);
+        vxyz_regional[0] = vxyz_itrf2020[0];
+        vxyz_regional[1] = vxyz_itrf2020[1];
+        vxyz_regional[2] = vxyz_itrf2020[2];
+    }
+    else if (code.find("THA") != std::string::npos) /* ITRF2014(2010) */
+    {
+        /* output ITRF2014(2010.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2010.0;
+        sprintf(buffer, "ITRF2014(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2014 */
+        convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (is_sa_station(code)) /* SIRGAS2000=ITRF2000(2000.4) */
+    {
+        /* output SIRGAS2000=ITRF2000(2000.4) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2000.4;
+        sprintf(buffer, "SIRGAS2000(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2000 */
+        convert_itrf2020_to_itrf2000(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
     else if (is_na_station(code))
     {
         /* output NAD83(2011)(2010.0) */
@@ -1252,7 +1315,7 @@ int coord_t::read_from_opus_file(const char* opusfname)
             if (vel_flag)
             {
                 FILE* fTMP = fopen("tmp.csv", "a");
-                if (fTMP) fprintf(fTMP, "%s,%s,%14.9f,%14.9f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f", name.c_str(), code.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], vxyz[0], vxyz[1], vxyz[2]);
+                if (fTMP) fprintf(fTMP, "%s,%s,%14.9f,%14.9f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f\n", name.c_str(), code.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], vxyz[0], vxyz[1], vxyz[2]);
                 if (fTMP) fclose(fTMP);
             }
             vxyz_itrf2020[0] = vxyz[0];

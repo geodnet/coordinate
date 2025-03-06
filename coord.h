@@ -42,6 +42,7 @@ void get_parameter_itrf2020_to_itrf2014(double* T, double* R, double *D, double 
 void get_parameter_itrf2020_to_itrf2008(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf2000(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf1996(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
+void get_parameter_itrf2020_to_itrf1991(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
 void get_parameter_itrf1996_to_nad_2011(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
 void get_parameter_itrf2020_to_nad_2011(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
 void get_parameter_itrf2020_to_nad_pa11(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
@@ -54,7 +55,9 @@ void coordinate_transformation_to(double* xyz_src, double* vxyz_src, double* xyz
 void convert_itrf2020_to_etrf2000(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_etrf2000, double *xyz_etrf2000, double *vxyz_etrf2000);
 void convert_itrf2020_to_itrf2014(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2014, double *xyz_itrf2014, double *vxyz_itrf2014);
 void convert_itrf2020_to_itrf2008(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2008, double *xyz_itrf2008, double *vxyz_itrf2008);
+void convert_itrf2020_to_itrf2000(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2000, double *xyz_itrf2000, double *vxyz_itrf2000);
 void convert_itrf2020_to_itrf1996(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1996, double *xyz_itrf1996, double *vxyz_itrf1996);
+void convert_itrf2020_to_itrf1991(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1991, double* xyz_itrf1991, double* vxyz_itrf1991);
 void convert_itrf2020_to_nad_2011(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_nad_2011, double* xyz_nad_2011, double* vxyz_nad_2011);
 void convert_itrf2020_to_nad_pa11(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_nad_pa11, double* xyz_nad_pa11, double* vxyz_nad_pa11);
 void convert_itrf2020_to_nad_ma11(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_nad_ma11, double* xyz_nad_ma11, double* vxyz_nad_ma11);
