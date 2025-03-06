@@ -289,8 +289,8 @@ std::string get_current_time_string()
 {
     time_t now = time(0);
     tm* gmtm = gmtime(&now);
-    char buffer[30] = { 0 };
-    sprintf(buffer, "%04i-%02i-%02i-%02i-%02i-%02i", gmtm->tm_year + 1900, gmtm->tm_mon + 1, gmtm->tm_mday, gmtm->tm_hour, gmtm->tm_min, gmtm->tm_sec);
+    char buffer[255] = { 0 };
+    sprintf(buffer, "%04i-%02i-%02i-%02i-%02i-%02i", gmtm->tm_year + 1900, gmtm->tm_mon + 1, gmtm->tm_mday, gmtm->tm_hour, (int)gmtm->tm_min, (int)gmtm->tm_sec);
     return std::string(buffer);
 }
 /* get country code */
@@ -333,7 +333,7 @@ int get_station_code(const char* name, double lat_deg, double lon_deg, std::stri
             ret = 2;
         }
         else {
-            printf("%s failed in code\n", name);
+            //printf("%s failed in code\n", name);
         }
     }
     std::filesystem::remove(code_fname);
