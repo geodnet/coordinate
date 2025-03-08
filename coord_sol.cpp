@@ -836,8 +836,26 @@ int coord_t::convert_coord()
         return ret;
     }
 
+    ecef2pos_(xyz_itrf2020, blh_itrf2020, RE_GRS80, FE_GRS80);
+
+    if (code.length()<3)
+    {
+        get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
+    }
+
     int vel_flag = sqrt(vxyz_itrf2020[0] * vxyz_itrf2020[0] + vxyz_itrf2020[1] * vxyz_itrf2020[1] + vxyz_itrf2020[2] * vxyz_itrf2020[2]) > 0.0001;
 
+    if (!vel_flag)
+    {
+        double vxyz[3] = { 0 };
+        if (get_station_vel(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz))
+        {
+            vxyz_itrf2020[0] = vxyz[0];
+            vxyz_itrf2020[1] = vxyz[1];
+            vxyz_itrf2020[2] = vxyz[2];
+            vel_flag = sqrt(vxyz_itrf2020[0] * vxyz_itrf2020[0] + vxyz_itrf2020[1] * vxyz_itrf2020[1] + vxyz_itrf2020[2] * vxyz_itrf2020[2]) > 0.0001;
+        }        
+    }
 
     char buffer[255] = { 0 };
 
@@ -1018,12 +1036,38 @@ int coord_t::convert_coord()
     }
     else if (code.find("LKA") != std::string::npos)     /* WGS84(G730)=ITRF1991(1994.0) */
     {
+        /* it seems that the WGS84 do not match the coordinate good, ask the LKA CORS for 4 stations' rinex data in 2024.026
+        *  and get the ITRF2020 coordinate, then compare their official coordinate, and get the coordinate bias
+        *  bias X     bias Y      bias Z     bias N      bias E      bias U/ht
+        *  0.92873	-1.83065	-0.83925	-0.63115	-1.23223	-1.73213    mean
+        *  0.03027	 0.04223	 0.01276	 0.02500	 0.02875	 0.05076    std
+        *  transform to WGS84(G730)(2024.0), then get the diff
+stn, bias X,    bias Y ,   bias Z  ,    bias N,     bias E,     bias U       
+KALU,0.9422,	-1.8691,	-0.7446,	-0.5475,	-1.2536,	-1.7506
+CLMB,0.9285,	-1.8215,	-0.7179,	-0.5171,	-1.2343,	-1.7043
+KEGA,0.8626,	-1.9400,	-0.7143,	-0.4853,	-1.1756,	-1.8440
+MADA,0.9073,	-1.8735,	-0.7151,	-0.4896,	-1.2238,	-1.7627
+mean,0.9102,	-1.8760,	-0.7230,	-0.5099,	-1.2218,	-1.7654
+std ,0.0301,	 0.0422,	 0.0126,	 0.0249,	 0.0287,	 0.0503
+        */
+#if 0
         /* output ITRF1991(1994.0) */
         epoch_regional = !vel_flag ? epoch_itrf2020 : 1994;
         sprintf(buffer, "WGS84(G730)(%7.2f)", epoch_regional);
         coord_name_regional = std::string(buffer);
         /* convert ITRF2020 to WGS84(G730) */
         convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+#else
+        /* output WGS84 based on fitting */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2024.0;
+        sprintf(buffer, "WGS84(G730)(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to WGS84(G730)(2024.0) */
+        convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+        xyz_regional[0] += 0.9102;
+        xyz_regional[1] +=-1.8760;
+        xyz_regional[2] +=-0.7230;
+#endif
     }
     else if (code.find("TWN") != std::string::npos) /* ITRF2020(2023.0) */
     {
