@@ -1016,7 +1016,7 @@ int coord_t::convert_coord()
         /* convert ITRF2020 to ITRF1991 */
         convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
-    else if (code.find("SKA") != std::string::npos)     /* WGS84(G730)=ITRF1991(1994.0) */
+    else if (code.find("LKA") != std::string::npos)     /* WGS84(G730)=ITRF1991(1994.0) */
     {
         /* output ITRF1991(1994.0) */
         epoch_regional = !vel_flag ? epoch_itrf2020 : 1994;
@@ -1441,7 +1441,7 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
     ctime = get_current_date_string();
 
     int numofline = 0;
-    int yy = 0, mm = 0, dd = 0, hour = 0, min = 0, sec = 0;
+    int yy = 0, mm = 0, dd = 0, hour = 0, min = 0, sec = 0, doy = 0;
     char* temp = strrchr(buffer, '-');
 
     char* val[MAXFIELD];
@@ -1523,8 +1523,8 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
         if (strlen(buffer) >= 83 && buffer[0] == 'P' && buffer[1] == 'O' && buffer[2] == 'S' && buffer[6] == 'X')
         {
             coord_name_itrf2020 = std::string(buffer + 8).substr(0, 5);
-            int yy = atoi(buffer + 14);
-            int doy = atoi(buffer + 17);
+            yy = atoi(buffer + 14);
+            doy = atoi(buffer + 17);
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             xyz_itrf2020[0] = atof(buffer + 44);
             sigma95_xyz[0] = atof(buffer + 73);
@@ -1532,8 +1532,8 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
         if (strlen(buffer) >= 83 && buffer[0] == 'P' && buffer[1] == 'O' && buffer[2] == 'S' && buffer[6] == 'Y')
         {
             coord_name_itrf2020 = std::string(buffer + 8).substr(0, 5);
-            int yy = atoi(buffer + 14);
-            int doy = atoi(buffer + 17);
+            yy = atoi(buffer + 14);
+            doy = atoi(buffer + 17);
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             xyz_itrf2020[1] = atof(buffer + 44);
             sigma95_xyz[1] = atof(buffer + 73);
@@ -1541,8 +1541,8 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
         if (strlen(buffer) >= 83 && buffer[0] == 'P' && buffer[1] == 'O' && buffer[2] == 'S' && buffer[6] == 'Z')
         {
             coord_name_itrf2020 = std::string(buffer + 8).substr(0, 5);
-            int yy = atoi(buffer + 14);
-            int doy = atoi(buffer + 17);
+            yy = atoi(buffer + 14);
+            doy = atoi(buffer + 17);
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             xyz_itrf2020[2] = atof(buffer + 44);
             sigma95_xyz[2] = atof(buffer + 73);
@@ -1550,8 +1550,8 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
         if (strlen(buffer) >= 83 && buffer[0] == 'P' && buffer[1] == 'O' && buffer[2] == 'S' && buffer[4] == 'L' && buffer[5] == 'A' && buffer[6] == 'T')
         {
             coord_name_itrf2020 = std::string(buffer + 8).substr(0, 5);
-            int yy = atoi(buffer + 14);
-            int doy = atoi(buffer + 17);
+            yy = atoi(buffer + 14);
+            doy = atoi(buffer + 17);
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             char dd_str[7] = { 0 };
             strncpy(dd_str, buffer + 44, 6);
@@ -1579,8 +1579,8 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
         if (strlen(buffer) >= 83 && buffer[0] == 'P' && buffer[1] == 'O' && buffer[2] == 'S' && buffer[4] == 'L' && buffer[5] == 'O' && buffer[6] == 'N')
         {
             coord_name_itrf2020 = std::string(buffer + 8).substr(0, 5);
-            int yy = atoi(buffer + 14);
-            int doy = atoi(buffer + 17);
+            yy = atoi(buffer + 14);
+            doy = atoi(buffer + 17);
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             char dd_str[7] = { 0 };
             strncpy(dd_str, buffer + 44, 6);
@@ -1613,6 +1613,21 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             blh_itrf2020[2] = atof(buffer + 44);
             sigma95_NEU[2] = atof(buffer + 73);
+        }
+    }
+
+    if (name.length()==0)
+    {
+        memset(buffer, 0, sizeof(buffer));
+        sprintf(buffer, "%03i", doy);
+        std::size_t loc = fname.find_last_of(buffer);
+        if (loc != std::string::npos)
+        {
+            name = fname.substr(0, loc - 3);
+        }
+        else
+        {
+            name = fname;
         }
     }
 
