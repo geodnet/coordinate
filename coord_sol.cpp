@@ -1013,7 +1013,16 @@ int coord_t::convert_coord()
         epoch_regional = !vel_flag ? epoch_itrf2020 : 1994;
         sprintf(buffer, "ITRF1991(%7.2f)", epoch_regional);
         coord_name_regional = std::string(buffer);
-        /* convert ITRF2020 to ITRF2008 */
+        /* convert ITRF2020 to ITRF1991 */
+        convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (code.find("SKA") != std::string::npos)     /* WGS84(G730)=ITRF1991(1994.0) */
+    {
+        /* output ITRF1991(1994.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 1994;
+        sprintf(buffer, "WGS84(G730)(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to WGS84(G730) */
         convert_itrf2020_to_itrf1991(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
     else if (code.find("TWN") != std::string::npos) /* ITRF2020(2023.0) */
@@ -1038,6 +1047,15 @@ int coord_t::convert_coord()
         coord_name_regional = std::string(buffer);
         /* convert ITRF2020 to ITRF2014 */
         convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (code.find("KOR") != std::string::npos) /* KGD2002=ITRF2000(2002.0) */
+    {   /* https://unstats.un.org/unsd/geoinfo/rcc/docs/rccap19/ip/E_Conf.102_IP17_Korea_19th_UNRCC-AP_Session3_final.pdf */
+        /* output KGD2002=ITRF2000(2002.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2000.0;
+        sprintf(buffer, "KGD2002(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2000 */
+        convert_itrf2020_to_itrf2000(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
     else if (is_sa_station(code)) /* SIRGAS2000=ITRF2000(2000.4) */
     {
