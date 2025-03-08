@@ -880,6 +880,33 @@ int coord_t::convert_coord()
         /* convert ITRF2020 to ITRF2008 */
         convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
+    else if (code.find("EGY") != std::string::npos)     /* ITRF2008(2011.811) */
+    {
+        /* output ITRF2008(2011.811) */
+        epoch_regional = vel_flag ? 2011.811 : epoch_itrf2020;
+        sprintf(buffer, "ITRF2008(%8.3f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (code.find("NGA") != std::string::npos)     /* Nigerian Geocentric Datum (NGD2012)=ITRF2008(2012.0) */
+    {
+        /* output ITRF2008(2012.0) */
+        epoch_regional = vel_flag ? 2012.0 : epoch_itrf2020;
+        sprintf(buffer, "NGD2012(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    else if (code.find("PHL") != std::string::npos) /* PGD2020=ITRF2014(2020.044) https://pagenet.namria.gov.ph/AGN/ServicesAndFees.aspx */
+    {
+        /* output ITRF2014(2020.044) */
+        epoch_regional = vel_flag ? 2020.044 : epoch_itrf2020;
+        sprintf(buffer, "PGD2020(%8.3f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2014 */
+        convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
     else if (code.find("MEX") != std::string::npos) /* ITRF2014(2010) */
     {
         /* output ITRF2014(2010.0) */
@@ -915,6 +942,27 @@ int coord_t::convert_coord()
         coord_name_regional = std::string(buffer);
         /* convert ITRF2020 to ITRF96 */
         convert_itrf2020_to_itrf1996(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+#if 0
+    else if (code.find("JPN") != std::string::npos) /* JGD2000=ITRF94(1997.0) */
+    {
+        /* output ITRF94(1997.0) */
+        epoch_regional = vel_flag ? 1997.0 : epoch_itrf2020;
+        sprintf(buffer, "JGD2000(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF94 */
+        convert_itrf2020_to_itrf1994(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+#endif
+    else if (code.find("JPN") != std::string::npos) /* JGD2011=ITRF2008 on 05/24/2011=DOY(144) */
+    {
+        /* output ITRF2008(2005.0) */
+        int doy = day_of_year(2011, 05, 24);
+        epoch_regional = vel_flag ? 2011.0 + doy / 365.0 : epoch_itrf2020;
+        sprintf(buffer, "JGD2011(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
     else if (code.find("GUM") != std::string::npos) /* NAD83(MA11)(2010.0) */
     {
@@ -1283,7 +1331,7 @@ int coord_t::read_from_opus_file(const char* opusfname)
     }
     else
     {
-        double vxyz[3] = { 0 }, vxyz2[3] = { 0 };
+        double vxyz[3] = { 0 }, xyz2[3] = { 0 }, vxyz2[3] = { 0 };
         double dt = epoch_itrf2020 - epoch_regional;
 
         int vel_flag = 0;
@@ -1303,6 +1351,33 @@ int coord_t::read_from_opus_file(const char* opusfname)
             vxyz_itrf2020[0] = vxyz2[0];
             vxyz_itrf2020[1] = vxyz2[1];
             vxyz_itrf2020[2] = vxyz2[2];
+        }
+        else if (coord_name_regional.find("NAD83(2011)") != std::string::npos && fabs(dt) > 0.001)
+        {
+            vxyz[0] = vxyz[1] = vxyz[2] = 0;
+            convert_nad_2011_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
+            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
+            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
+            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
+            vel_flag = 1;
+        }
+        else if (coord_name_regional.find("NAD83(PA11)") != std::string::npos && fabs(dt) > 0.001)
+        {
+            vxyz[0] = vxyz[1] = vxyz[2] = 0;
+            convert_nad_pa11_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
+            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
+            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
+            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
+            vel_flag = 1;
+        }
+        else if (coord_name_regional.find("NAD83(MA11)") != std::string::npos && fabs(dt) > 0.001)
+        {
+            vxyz[0] = vxyz[1] = vxyz[2] = 0;
+            convert_nad_ma11_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
+            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
+            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
+            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
+            vel_flag = 1;
         }
 
         ecef2pos_(xyz_itrf2020, blh_itrf2020, RE_GRS80, FE_GRS80);

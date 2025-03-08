@@ -142,6 +142,41 @@ extern void get_parameter_itrf2020_to_itrf1996(double* T, double* R, double *D, 
     return;
 }
 
+extern void get_parameter_itrf2020_to_itrf1994(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd)
+{
+    /* from ITRF2020 to ITRF1994 both 2015.0 epoch */
+    double pT[3] = { 6.5 / 1000.0,-3.9 / 1000.0, -77.9 / 1000.0 };
+    double vT[3] = { 0.1 / 1000.0,-0.6 / 1000.0, -3.1 / 1000.0 };
+    double pD = 3.98 * 1.0e-9;
+    double vD = 0.12 * 1.0e-9;
+    double pR[3] = { 0 * MAS2R, 0 * MAS2R, 0.36 * MAS2R };
+    double vR[3] = { 0 * MAS2R, 0 * MAS2R, 0.02 * MAS2R };
+
+    double dt = t - 2015.0;
+
+    T[0] = pT[0] + vT[0] * dt;
+    T[1] = pT[1] + vT[1] * dt;
+    T[2] = pT[2] + vT[2] * dt;
+
+    R[0] = pR[0] + vR[0] * dt;
+    R[1] = pR[1] + vR[1] * dt;
+    R[2] = pR[2] + vR[2] * dt;
+
+    *D = pD + vD * dt;
+
+    vt[0] = vT[0];
+    vt[1] = vT[1];
+    vt[2] = vT[2];
+
+    vr[0] = vR[0];
+    vr[1] = vR[1];
+    vr[2] = vR[2];
+
+    *vd = vD;
+
+    return;
+}
+
 extern void get_parameter_itrf2020_to_itrf1991(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd)
 {
     /* from ITRF2020 to ITRF1991 both 2015.0 epoch */
@@ -444,7 +479,7 @@ void convert_itrf2020_to_itrf2000(double* xyz_itrf2020, double* vxyz_itrf2020, d
     /* get coordinate and velocity of ITRF2008 at epoch_itrf2020 */
     coordinate_transformation_to(xyz_itrf2020, vxyz_itrf2020, xyz_itrf2000, vxyz_itrf2000, T, R, D, vt, vr, vd);
     //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2000[0], xyz_itrf2000[1], xyz_itrf2000[2], vxyz_itrf2000[0], vxyz_itrf2000[1], vxyz_itrf2000[2]);
-    /* get coordinate at epoch_itrf2008 */
+    /* get coordinate at epoch_itrf2000 */
     xyz_itrf2000[0] += vxyz_itrf2000[0] * (epoch_itrf2000 - epoch_itrf2020);
     xyz_itrf2000[1] += vxyz_itrf2000[1] * (epoch_itrf2000 - epoch_itrf2020);
     xyz_itrf2000[2] += vxyz_itrf2000[2] * (epoch_itrf2000 - epoch_itrf2020);
@@ -465,11 +500,32 @@ void convert_itrf2020_to_itrf1996(double *xyz_itrf2020, double *vxyz_itrf2020, d
     /* get coordinate and velocity of ITRF1996 at epoch_itrf2020 */
     coordinate_transformation_to(xyz_itrf2020, vxyz_itrf2020, xyz_itrf1996, vxyz_itrf1996, T, R, D, vt, vr, vd);
     //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf1996[0], xyz_itrf1996[1], xyz_itrf1996[2], vxyz_itrf1996[0], vxyz_itrf1996[1], vxyz_itrf1996[2]);
-    /* get coordinate at epoch_itrf2008 */
+    /* get coordinate at epoch_itrf1996 */
     xyz_itrf1996[0] += vxyz_itrf1996[0] * (epoch_itrf1996 - epoch_itrf2020);
     xyz_itrf1996[1] += vxyz_itrf1996[1] * (epoch_itrf1996 - epoch_itrf2020);
     xyz_itrf1996[2] += vxyz_itrf1996[2] * (epoch_itrf1996 - epoch_itrf2020);
     //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf1996, xyz_itrf1996[0], xyz_itrf1996[1], xyz_itrf1996[2], vxyz_itrf1996[0], vxyz_itrf1996[1], vxyz_itrf1996[2]);
+    return;
+}
+void convert_itrf2020_to_itrf1994(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1994, double* xyz_itrf1994, double* vxyz_itrf1994)
+{
+    double T[3] = { 0 };
+    double R[3] = { 0 };
+    double D = 0;
+    double vt[3] = { 0 };
+    double vr[3] = { 0 };
+    double vd = 0;
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+    /* get parameter from ITRF2020 to ITRF1994 at epoch_itrf2020 */
+    get_parameter_itrf2020_to_itrf1996(T, R, &D, epoch_itrf2020, vt, vr, &vd);
+    /* get coordinate and velocity of ITRF1994 at epoch_itrf2020 */
+    coordinate_transformation_to(xyz_itrf2020, vxyz_itrf2020, xyz_itrf1994, vxyz_itrf1994, T, R, D, vt, vr, vd);
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf1994[0], xyz_itrf1994[1], xyz_itrf1994[2], vxyz_itrf1994[0], vxyz_itrf1994[1], vxyz_itrf1994[2]);
+    /* get coordinate at epoch_itrf1994 */
+    xyz_itrf1994[0] += vxyz_itrf1994[0] * (epoch_itrf1994 - epoch_itrf2020);
+    xyz_itrf1994[1] += vxyz_itrf1994[1] * (epoch_itrf1994 - epoch_itrf2020);
+    xyz_itrf1994[2] += vxyz_itrf1994[2] * (epoch_itrf1994 - epoch_itrf2020);
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf1994, xyz_itrf1994[0], xyz_itrf1994[1], xyz_itrf1994[2], vxyz_itrf1994[0], vxyz_itrf1994[1], vxyz_itrf1994[2]);
     return;
 }
 void convert_itrf2020_to_itrf1991(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1991, double* xyz_itrf1991, double* vxyz_itrf1991)
@@ -587,6 +643,123 @@ void convert_itrf2014_to_itrf2020(double *xyz_itrf2014, double *vxyz_itrf2014, d
     xyz_itrf2020[0] += vxyz_itrf2020[0] * (epoch_itrf2020 - epoch_itrf2014);
     xyz_itrf2020[1] += vxyz_itrf2020[1] * (epoch_itrf2020 - epoch_itrf2014);
     xyz_itrf2020[2] += vxyz_itrf2020[2] * (epoch_itrf2020 - epoch_itrf2014);
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    return;
+}
+void convert_nad_2011_to_itrf2020(double* xyz_nad_2011, double* vxyz_nad_2011, double epoch_nad_2011, double epoch_itrf2020, double* xyz_itrf2020, double* vxyz_itrf2020)
+{
+    double T[3] = { 0 };
+    double R[3] = { 0 };
+    double D = 0;
+    double vt[3] = { 0 };
+    double vr[3] = { 0 };
+    double vd = 0;
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_2011, xyz_nad_2011[0], xyz_nad_2011[1], xyz_nad_2011[2], vxyz_nad_2011[0], vxyz_nad_2011[1], vxyz_nad_2011[2]);
+    /* get parameter from NAD83(2011) to ITRF2020 at epoch_nad_2011 */
+    get_parameter_itrf2020_to_nad_2011(T, R, &D, epoch_nad_2011, vt, vr, &vd);
+
+    T[0] = -T[0];
+    T[1] = -T[1];
+    T[2] = -T[2];
+    R[0] = -R[0];
+    R[1] = -R[1];
+    R[2] = -R[2];
+    D = -D;
+    vt[0] = -vt[0];
+    vt[1] = -vt[1];
+    vt[2] = -vt[2];
+    vr[0] = -vr[0];
+    vr[1] = -vr[1];
+    vr[2] = -vr[2];
+    vd = -vd;
+    /* get coordinate and velocity of ITRF2020 at epoch_nad_2011 */
+    coordinate_transformation_to(xyz_nad_2011, vxyz_nad_2011, xyz_itrf2020, vxyz_itrf2020, T, R, D, vt, vr, vd);
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_2011, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    xyz_itrf2020[0] += vxyz_itrf2020[0] * (epoch_itrf2020 - epoch_nad_2011);
+    xyz_itrf2020[1] += vxyz_itrf2020[1] * (epoch_itrf2020 - epoch_nad_2011);
+    xyz_itrf2020[2] += vxyz_itrf2020[2] * (epoch_itrf2020 - epoch_nad_2011);
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    return;
+}
+void convert_nad_pa11_to_itrf2020(double* xyz_nad_pa11, double* vxyz_nad_pa11, double epoch_nad_pa11, double epoch_itrf2020, double* xyz_itrf2020, double* vxyz_itrf2020)
+{
+    double T[3] = { 0 };
+    double R[3] = { 0 };
+    double D = 0;
+    double vt[3] = { 0 };
+    double vr[3] = { 0 };
+    double vd = 0;
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_pa11, xyz_nad_pa11[0], xyz_nad_pa11[1], xyz_nad_pa11[2], vxyz_nad_pa11[0], vxyz_nad_pa11[1], vxyz_nad_pa11[2]);
+    /* get parameter from NAD83(PA11) to ITRF2020 at epoch_nad_pa11 */
+    get_parameter_itrf2020_to_nad_pa11(T, R, &D, epoch_nad_pa11, vt, vr, &vd);
+
+    T[0] = -T[0];
+    T[1] = -T[1];
+    T[2] = -T[2];
+    R[0] = -R[0];
+    R[1] = -R[1];
+    R[2] = -R[2];
+    D = -D;
+    vt[0] = -vt[0];
+    vt[1] = -vt[1];
+    vt[2] = -vt[2];
+    vr[0] = -vr[0];
+    vr[1] = -vr[1];
+    vr[2] = -vr[2];
+    vd = -vd;
+    /* get coordinate and velocity of ITRF2020 at epoch_nad_pa11 */
+    coordinate_transformation_to(xyz_nad_pa11, vxyz_nad_pa11, xyz_itrf2020, vxyz_itrf2020, T, R, D, vt, vr, vd);
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_pa11, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    xyz_itrf2020[0] += vxyz_itrf2020[0] * (epoch_itrf2020 - epoch_nad_pa11);
+    xyz_itrf2020[1] += vxyz_itrf2020[1] * (epoch_itrf2020 - epoch_nad_pa11);
+    xyz_itrf2020[2] += vxyz_itrf2020[2] * (epoch_itrf2020 - epoch_nad_pa11);
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    return;
+}
+void convert_nad_ma11_to_itrf2020(double* xyz_nad_ma11, double* vxyz_nad_ma11, double epoch_nad_ma11, double epoch_itrf2020, double* xyz_itrf2020, double* vxyz_itrf2020)
+{
+    double T[3] = { 0 };
+    double R[3] = { 0 };
+    double D = 0;
+    double vt[3] = { 0 };
+    double vr[3] = { 0 };
+    double vd = 0;
+
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_ma11, xyz_nad_ma11[0], xyz_nad_ma11[1], xyz_nad_ma11[2], vxyz_nad_ma11[0], vxyz_nad_ma11[1], vxyz_nad_ma11[2]);
+    /* get parameter from NAD83(MA11) to ITRF2020 at epoch_nad_ma11 */
+    get_parameter_itrf2020_to_nad_ma11(T, R, &D, epoch_nad_ma11, vt, vr, &vd);
+
+    T[0] = -T[0];
+    T[1] = -T[1];
+    T[2] = -T[2];
+    R[0] = -R[0];
+    R[1] = -R[1];
+    R[2] = -R[2];
+    D = -D;
+    vt[0] = -vt[0];
+    vt[1] = -vt[1];
+    vt[2] = -vt[2];
+    vr[0] = -vr[0];
+    vr[1] = -vr[1];
+    vr[2] = -vr[2];
+    vd = -vd;
+    /* get coordinate and velocity of ITRF2020 at epoch_nad_ma11 */
+    coordinate_transformation_to(xyz_nad_ma11, vxyz_nad_ma11, xyz_itrf2020, vxyz_itrf2020, T, R, D, vt, vr, vd);
+    //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_nad_ma11, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
+
+    xyz_itrf2020[0] += vxyz_itrf2020[0] * (epoch_itrf2020 - epoch_nad_ma11);
+    xyz_itrf2020[1] += vxyz_itrf2020[1] * (epoch_itrf2020 - epoch_nad_ma11);
+    xyz_itrf2020[2] += vxyz_itrf2020[2] * (epoch_itrf2020 - epoch_nad_ma11);
 
     //printf("%7.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2]);
 
