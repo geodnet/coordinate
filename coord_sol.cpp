@@ -934,6 +934,15 @@ int coord_t::convert_coord()
         /* convert ITRF2020 to ITRF2014 */
         convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
+    else if (code.find("KEN") != std::string::npos) /* ITRF2014 current epoch */
+    {
+        /* output ITRF2014 */
+        epoch_regional = vel_flag ? epoch_itrf2020 : epoch_itrf2020;
+        sprintf(buffer, "ITRF2014(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2014 */
+        convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
     else if (code.find("AUS") != std::string::npos) /* GDA2020=ITRF2014(2020.0) */
     {
         /* output ITRF2014(2020.0) */
@@ -961,6 +970,15 @@ int coord_t::convert_coord()
         /* convert ITRF2020 to ITRF96 */
         convert_itrf2020_to_itrf1996(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
+    else if (code.find("CHN") != std::string::npos) /* CGCS2000 ITRF97(2000.0) */
+    {
+        /* output ITRF97(2000.0) */
+        epoch_regional = vel_flag ? 2000.0 : epoch_itrf2020;
+        sprintf(buffer, "CGCS2000(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF97 */
+        convert_itrf2020_to_itrf1996(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
 #if 0
     else if (code.find("JPN") != std::string::npos) /* JGD2000=ITRF94(1997.0) */
     {
@@ -974,7 +992,7 @@ int coord_t::convert_coord()
 #endif
     else if (code.find("JPN") != std::string::npos) /* JGD2011=ITRF2008 on 05/24/2011=DOY(144) */
     {
-        /* output ITRF2008(2005.0) */
+        /* output ITRF2008 */
         int doy = day_of_year(2011, 05, 24);
         epoch_regional = vel_flag ? 2011.0 + doy / 365.0 : epoch_itrf2020;
         sprintf(buffer, "JGD2011(%7.2f)", epoch_regional);
@@ -982,6 +1000,16 @@ int coord_t::convert_coord()
         /* convert ITRF2020 to ITRF2008 */
         convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
+    else if (code.find("IDN") != std::string::npos) /* IGRS2013=ITRF2008(2012.0) */
+    { /* https://un-ggim-ap.org/sites/default/files/media/meetings/Plenary08/WG1_S2B_2%20Arief%20Syafii_Indonesia_Geodetic%20Reference%20Frame.pdf */
+        /* output ITRF2008(2012.0) */
+        int doy = day_of_year(2011, 05, 24);
+        epoch_regional = vel_flag ? 2012.0 : epoch_itrf2020;
+        sprintf(buffer, "IGRS2013(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }    
     else if (code.find("GUM") != std::string::npos) /* NAD83(MA11)(2010.0) */
     {
         /* output NAD83(MA11)(2010.0) */
@@ -1101,6 +1129,38 @@ std ,0.0301,	 0.0422,	 0.0126,	 0.0249,	 0.0287,	 0.0503
         /* convert ITRF2020 to ITRF2000 */
         convert_itrf2020_to_itrf2000(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
+    else if (code.find("MYS") != std::string::npos) /* MGRF2000=ITRF2000(2000.0), MGRF2020=ITRF2020(2020.0) */
+    {
+#if 0        
+        /* output MGRF2000=ITRF2000(2000.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2000.0;
+        sprintf(buffer, "MGRF2000(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2000 */
+        convert_itrf2020_to_itrf2000(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+#else
+        /* output MGRF2020=ITRF2020(2020.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2020.0;
+        sprintf(buffer, "MGRF2020(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* predict to ITRF2020 2020.0 epoch */
+        xyz_regional[0] = xyz_itrf2020[0] + vxyz_itrf2020[0] * (epoch_regional - epoch_itrf2020);
+        xyz_regional[1] = xyz_itrf2020[1] + vxyz_itrf2020[1] * (epoch_regional - epoch_itrf2020);
+        xyz_regional[2] = xyz_itrf2020[2] + vxyz_itrf2020[2] * (epoch_regional - epoch_itrf2020);
+        vxyz_regional[0] = vxyz_itrf2020[0];
+        vxyz_regional[1] = vxyz_itrf2020[1];
+        vxyz_regional[2] = vxyz_itrf2020[2];
+#endif        
+    }    
+    else if (code.find("ARE") != std::string::npos) /* MTRF2000=ITRF2000(2004.0) */
+    {
+        /* output MTRF2000=ITRF2000(2004.0) */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2004.0;
+        sprintf(buffer, "MTRF2000(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2000 */
+        convert_itrf2020_to_itrf2000(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }     
     else if (is_sa_station(code)) /* SIRGAS2000=ITRF2000(2000.4) */
     {
         /* output SIRGAS2000=ITRF2000(2000.4) */
@@ -1188,6 +1248,10 @@ int coord_t::read_from_opus_file(const char* opusfname)
     if (num >= 6)
     {
         name = std::string(val[num - 6]);
+    }
+    else
+    {
+        name = fname;
     }
     while (fLOG && !feof(fLOG) && fgets(buffer, sizeof(buffer), fLOG))
     {
@@ -1515,6 +1579,10 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
     {
         name = std::string(val[num - 5]);
     }
+    else
+    {
+        name = fname;
+    }
 
     type = "NRCAN";
 
@@ -1657,21 +1725,6 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
             epoch_itrf2020 = 2000.0 + yy + doy / 365.0;
             blh_itrf2020[2] = atof(buffer + 44);
             sigma95_NEU[2] = atof(buffer + 73);
-        }
-    }
-
-    if (name.length()==0)
-    {
-        memset(buffer, 0, sizeof(buffer));
-        sprintf(buffer, "%03i", doy);
-        std::size_t loc = fname.find_last_of(buffer);
-        if (loc != std::string::npos)
-        {
-            name = fname.substr(0, loc - 3);
-        }
-        else
-        {
-            name = fname;
         }
     }
 

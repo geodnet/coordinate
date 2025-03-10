@@ -41,6 +41,7 @@ extern "C" {
 void get_parameter_itrf2020_to_itrf2014(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf2008(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf2000(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
+void get_parameter_itrf2020_to_itrf1997(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf1996(double* T, double* R, double *D, double t, double *vt, double *vr, double *vd);
 void get_parameter_itrf2020_to_itrf1994(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
 void get_parameter_itrf2020_to_itrf1991(double* T, double* R, double* D, double t, double* vt, double* vr, double* vd);
@@ -57,6 +58,7 @@ void convert_itrf2020_to_etrf2000(double *xyz_itrf2020, double *vxyz_itrf2020, d
 void convert_itrf2020_to_itrf2014(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2014, double *xyz_itrf2014, double *vxyz_itrf2014);
 void convert_itrf2020_to_itrf2008(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2008, double *xyz_itrf2008, double *vxyz_itrf2008);
 void convert_itrf2020_to_itrf2000(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf2000, double *xyz_itrf2000, double *vxyz_itrf2000);
+void convert_itrf2020_to_itrf1997(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1997, double *xyz_itrf1997, double *vxyz_itrf1997);
 void convert_itrf2020_to_itrf1996(double *xyz_itrf2020, double *vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1996, double *xyz_itrf1996, double *vxyz_itrf1996);
 void convert_itrf2020_to_itrf1994(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1994, double* xyz_itrf1994, double* vxyz_itrf1994);
 void convert_itrf2020_to_itrf1991(double* xyz_itrf2020, double* vxyz_itrf2020, double epoch_itrf2020, double epoch_itrf1991, double* xyz_itrf1991, double* vxyz_itrf1991);
