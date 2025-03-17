@@ -3,14 +3,20 @@ Coordinate is a utility used by GEODNET to extract NOAA/NGS OPUS && NRCAN PPP IT
 
 # Coordinate Estimation Procedure of GEODNET Base Station
 ## New Station
-If a new station is online for 3 continuous hours, then we will collect 30s sample interval RINEX data and call NRCAN PPP<sup>1</sup> API. If the NRCAN PPP return to a reasonable solution, then the station is added to the RTK service list. Otherwise, the same procedure will be repeated every hour using the last 3 hours' rinex data. For a new station, another NRCAN PPP solution will be achieved once it has a full day (in GPS time). The station coordinate of the base station will be updated based on the NRCAN PPP solution quality.
+If a new station is online for 3 continuous hours, then we will collect 30s sample interval RINEX data and call NRCAN PPP<sup>1</sup> API. If the NRCAN PPP return to a reasonable solution (as shown as Table 1), then the station is added to the RTK service list. Otherwise, the same procedure will be repeated every hour using the last 3 hours' rinex data. For a new station, another NRCAN PPP solution will be achieved once it has a full day (in GPS time). The station coordinate of the base station will be updated based on the NRCAN PPP solution quality.
+
+Table 1. Solution to turn a new station status from ONLINE to ACTIVE  
+
 
 ## Relocated Station 
 If a station is online again after offline for more than 30 minutes, then the SPP (Standard Point Positioning) solution will be used to compare with the current PPP solution, if there is significant changes, it will be treated as a New Station<sup>2</sup>.  
 
+Table 2. Solution to turn an offline station from ONLINE to ACTIVE    
+
 ## Existing station
-The base station coorinate of all stations will be re-estimated every 15 days, and the station coordinate will be updated based on the NRCAN PPP solution quality. Thus the station coordinate should be always within 1 month of current epoch.
-#How to get country code for each region
+The base station coorinate of all stations will be re-estimated every 15 days, and the station coordinate will be updated based on the NRCAN PPP solution quality. Thus the station coordinate should be always within 1 month of current epoch.  
+
+## How to get country code for each region
 Coordinate use get_code.js to get the country code (3 letter) to determine the regional coordinate system.
 
 # How to get the ITRF2020 velocity based on ITRF2020 velocity field
