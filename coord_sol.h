@@ -102,4 +102,6 @@ struct coord_t
     int convert_coord();
     int read_from_opus_file(const char* opusfname);
     int read_from_nrcan_file(const char* nrcanfname);
+    int read_estimation_list(char* buffer);
+    int read_history_list(char* buffer);
 };

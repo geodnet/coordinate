@@ -182,8 +182,6 @@ static int check_rrr(int argc, const char* argv[])
 
 int main(int argc, const char *argv[])
 {
-    //return check_rrr(argc, argv);
-
     if (argc < 2)
     {
         printhelp();
@@ -191,6 +189,7 @@ int main(int argc, const char *argv[])
     else 
     {
         coord_t coord;
+        std::map<std::string, coord_t> mCoords;
         if (strstr(argv[1], "update_opus_file") && coord.read_from_opus_file(argv[2]))
         {
             
@@ -249,6 +248,56 @@ int main(int argc, const char *argv[])
                     coord.convert_coord();
                 }
 
+                coord.reset();
+            }
+            if (fCSV) fclose(fCSV);
+        }
+        else if (strstr(argv[1], "update_esti_list"))
+        {
+            FILE* fCSV = fopen(argv[2], "r");
+            char buffer[1024] = { 0 };
+            while (fCSV && !feof(fCSV) && fgets(buffer, sizeof(buffer), fCSV))
+            {
+                char* temp = strrchr(buffer, '\n'); if (temp) temp[0] = '\0';
+                temp = strrchr(buffer, '\r'); if (temp) temp[0] = '\0';
+                if (coord.read_estimation_list(buffer))
+                {
+                    double rms3D = sqrt(coord.sigma95_NEU[0] * coord.sigma95_NEU[0] + coord.sigma95_NEU[1] * coord.sigma95_NEU[1] + coord.sigma95_NEU[2] * coord.sigma95_NEU[2]);
+                    printf("OPUS ,%s,%14s,%s,%s,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%10.6f\n"
+                        , coord.code.c_str(), coord.name.c_str(), coord.stime.c_str(), coord.ctime.c_str()
+                        , coord.coord_name_itrf2020.c_str(), coord.epoch_itrf2020, coord.xyz_itrf2020[0], coord.xyz_itrf2020[1], coord.xyz_itrf2020[2], coord.amb_fix_rate, coord.sigma95_NEU[0], coord.sigma95_NEU[1], coord.sigma95_NEU[2], rms3D);
+
+                    ecef2pos_(coord.xyz_itrf2020, coord.blh_itrf2020, RE_GRS80, FE_GRS80);
+
+                    //coord.convert_coord();
+
+                    mCoords[coord.get_date_time()] = coord;
+                }
+
+                coord.reset();
+            }
+            if (fCSV) fclose(fCSV);
+        }
+        else if (strstr(argv[1], "update_hist_list"))
+        {
+            /*
+            Station,Date(GNSS Time),Computing time(UTC Time),Platform,Rejected Epochs,Fixed Ambiguities,Sigmas(95%) North,Sigmas(95%) East,Sigmas(95%) Height,ITRF2020 name,epoch,x,y,z,sigma95X,sigma95Y,sigma95Z,ITRF2015 name,epoch,x,y,z,vx,vy,vz,WGS84 name,x,y,z,vx,vy,vz,Regional name,epoch,x,y,z,vx,vy,vz
+            */
+            FILE* fCSV = fopen(argv[2], "r");
+            char buffer[1024] = { 0 };
+            while (fCSV && !feof(fCSV) && fgets(buffer, sizeof(buffer), fCSV))
+            {
+                char* temp = strrchr(buffer, '\n'); if (temp) temp[0] = '\0';
+                temp = strrchr(buffer, '\r'); if (temp) temp[0] = '\0';
+                if (coord.read_history_list(buffer))
+                {
+                    double rms3D = sqrt(coord.sigma95_NEU[0] * coord.sigma95_NEU[0] + coord.sigma95_NEU[1] * coord.sigma95_NEU[1] + coord.sigma95_NEU[2] * coord.sigma95_NEU[2]);
+                    printf("OPUS ,%s,%14s,%s,%s,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%10.6f\n"
+                        , coord.code.c_str(), coord.name.c_str(), coord.stime.c_str(), coord.ctime.c_str()
+                        , coord.coord_name_itrf2020.c_str(), coord.epoch_itrf2020, coord.xyz_itrf2020[0], coord.xyz_itrf2020[1], coord.xyz_itrf2020[2], coord.amb_fix_rate, coord.sigma95_NEU[0], coord.sigma95_NEU[1], coord.sigma95_NEU[2], rms3D);
+
+                    //coord.convert_coord();
+                }
                 coord.reset();
             }
             if (fCSV) fclose(fCSV);

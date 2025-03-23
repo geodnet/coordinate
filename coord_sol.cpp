@@ -1766,4 +1766,132 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
     return ret;
 }
 
-    
+int coord_t::read_estimation_list(char* buffer)
+{
+    /* export from estimation list
+    Station,Date,Platform,Status,Result,Message,Rejected Epochs,Fixed Ambiguities,Sigmas(95%) North,SigmasE(95%) East,SigmasU(95%) Height,Primitive,ITRF2020,WGS84,Regional
+    */
+    int ret = 0;
+    if (strstr(buffer, "Station") || strstr(buffer, "Platform")) return ret;
+    char* temp = nullptr;
+    while (temp = strstr(buffer, ":")) temp[0] = ',';
+    while (temp = strstr(buffer, ";")) temp[0] = ',';
+    /*
+    * E465B86A0745,2025-03-16,NRCAN,Done,Success,,0,88.7,0.0029,0.0025,0.0117,name: ITRF2020(2025.21);epoch: 2025.20548;x: 1005413.6541;y: -4878972.1712;z: 3970627.8834,name: ITRF2020(2015.00);epoch: 2015;x: 1005413.8048;y: -4878972.1658;z: 3970627.8574,name: WGS84(G2139)(2025.50);epoch: 2025.5;x: 1005413.6479;y: -4878972.1713;z: 3970627.886,name: NAD83(2011)(2010.00);epoch: 2010;x: 1005414.632;y: -4878973.6103;z: 3970627.9347
+    */
+
+    char* val[100];
+    int num = parse_fields(buffer, val, ',');
+    if (num > 50 && strstr(val[4], "Success"))
+    {
+        name = std::string(val[0]);
+        stime = std::string(val[1]);
+        type = std::string(val[2]);
+        amb_fix_rate = atof(val[7]);
+        sigma95_NEU[0] = atof(val[8]);
+        sigma95_NEU[1] = atof(val[9]);
+        sigma95_NEU[2] = atof(val[10]);
+        coord_name_itrf2020 = std::string(val[12]);
+        epoch_itrf2020 = atof(val[14]);
+        xyz_itrf2020[0] = atof(val[16]);
+        xyz_itrf2020[1] = atof(val[18]);
+        xyz_itrf2020[2] = atof(val[20]);
+        coord_name_itrf2020_2015 = std::string(val[22]);
+        epoch_itrf2020_2015 = atof(val[24]);
+        xyz_itrf2020_2015[0] = atof(val[26]);
+        xyz_itrf2020_2015[1] = atof(val[28]);
+        xyz_itrf2020_2015[2] = atof(val[30]);
+        coord_name_wgs84 = std::string(val[32]);
+        epoch_wgs84 = atof(val[34]);
+        xyz_wgs84[0] = atof(val[36]);
+        xyz_wgs84[1] = atof(val[38]);
+        xyz_wgs84[2] = atof(val[40]);
+        coord_name_regional = std::string(val[42]);
+        epoch_regional = atof(val[44]);
+        xyz_regional[0] = atof(val[46]);
+        xyz_regional[1] = atof(val[48]);
+        xyz_regional[2] = atof(val[50]);
+        ret = 1;
+    }
+    return ret;
+}
+
+int coord_t::read_history_list(char* buffer)
+{
+    int ret = 0;
+    if (strstr(buffer, "Station") || strstr(buffer, "Platform")) return ret;
+    char* temp = nullptr;
+    //while (temp = strstr(buffer, ":")) temp[0] = ',';
+    //while (temp = strstr(buffer, ";")) temp[0] = ',';
+    /*
+    * Station,Date(GNSS Time),Computing time(UTC Time),Platform,Rejected Epochs,Fixed Ambiguities,Sigmas(95%) North,Sigmas(95%) East,Sigmas(95%) Height,ITRF2020 name,epoch,x,y,z,sigma95X,sigma95Y,sigma95Z,ITRF2015 name,epoch,x,y,z,vx,vy,vz,WGS84 name,x,y,z,vx,vy,vz,Regional name,epoch,x,y,z,vx,vy,vz
+    * G001,2025-03-15,2025-03-16 01:02:35,NRCAN,0,99.09,0.0028,0.0023,0.0096,ITRF2020(2025.20),2025.20274,-2687303.0419,-4302926.7293,3852731.27,0.0047,0.007,0.0059,ITRF2020(2015.00),2015,-2687302.8053,-4302926.9705,3852731.1716,-0.023185,0.023645,0.009641,WGS84(G2139)(2025.50),2025.5,-2687303.0491,-4302926.7224,3852731.2747,-0.023185,0.023545,0.009841,NAD83(2011)(2010.00),2010,-2687301.9056,-4302928.3555,3852731.1462,-0.006983,0.023831,0.019383
+    * G001,2025-03-01,2025-03-02 00:57:32,NRCAN,0,97.92,0.0028,0.0023,0.0096,ITRF2020(2025.2),2025.16,-2687303.041,-4302926.7311,3852731.2662,0.0047,0.007,0.0059,ITRF2020(2015.00),2015,-2687302.805,-4302926.971,3852731.168,-23.19,23.65,9.64,WGS84(G2139)(2025.50),2025.5,-2687303.049,-4302926.723,3852731.271,0,0,0,NAD83(2011)(2010.00),2010,-2687301.906,-4302928.356,3852731.143,0,0,0
+    */
+    char* val[100];
+    int num = parse_fields(buffer, val, ',');
+    if (num > 40)
+    {
+        name = std::string(val[0]);
+        stime = std::string(val[1]);
+        ctime = std::string(val[2]);
+        type = std::string(val[3]);
+        amb_fix_rate = atof(val[5]);
+        sigma95_NEU[0] = atof(val[6]);
+        sigma95_NEU[1] = atof(val[7]);
+        sigma95_NEU[2] = atof(val[8]);
+        coord_name_itrf2020 = std::string(val[9]);
+        epoch_itrf2020 = atof(val[10]);
+        xyz_itrf2020[0] = atof(val[11]);
+        xyz_itrf2020[1] = atof(val[12]);
+        xyz_itrf2020[2] = atof(val[13]);
+        sigma95_xyz[0] = atof(val[14]);
+        sigma95_xyz[1] = atof(val[15]);
+        sigma95_xyz[2] = atof(val[16]);
+        coord_name_itrf2020_2015 = std::string(val[17]);
+        epoch_itrf2020_2015 = atof(val[18]);
+        xyz_itrf2020_2015[0] = atof(val[19]);
+        xyz_itrf2020_2015[1] = atof(val[20]);
+        xyz_itrf2020_2015[2] = atof(val[21]);
+        vxyz_itrf2020[0] = atof(val[22]);
+        vxyz_itrf2020[1] = atof(val[23]);
+        vxyz_itrf2020[2] = atof(val[24]);
+        double vxyz3d = sqrt(vxyz_itrf2020[0] * vxyz_itrf2020[0] + vxyz_itrf2020[1] * vxyz_itrf2020[1] + vxyz_itrf2020[2] * vxyz_itrf2020[2]);
+        if (vxyz3d > 0.5) /* mm/year */
+        {
+            vxyz_itrf2020[0] /= 1000.0;
+            vxyz_itrf2020[1] /= 1000.0;
+            vxyz_itrf2020[2] /= 1000.0;
+        }
+        coord_name_wgs84 = std::string(val[25]);
+        epoch_wgs84 = atof(val[26]);
+        xyz_wgs84[0] = atof(val[27]);
+        xyz_wgs84[1] = atof(val[28]);
+        xyz_wgs84[2] = atof(val[29]);
+        vxyz_wgs84[0] = atof(val[30]);
+        vxyz_wgs84[1] = atof(val[31]);
+        vxyz_wgs84[2] = atof(val[32]);
+        if (vxyz3d > 0.5) /* mm/year */
+        {
+            vxyz_wgs84[0] /= 1000.0;
+            vxyz_wgs84[1] /= 1000.0;
+            vxyz_wgs84[2] /= 1000.0;
+        }
+        coord_name_regional = std::string(val[33]);
+        epoch_regional = atof(val[34]);
+        xyz_regional[0] = atof(val[35]);
+        xyz_regional[1] = atof(val[36]);
+        xyz_regional[2] = atof(val[37]);
+        vxyz_regional[0] = atof(val[38]);
+        vxyz_regional[1] = atof(val[39]);
+        vxyz_regional[2] = atof(val[40]);
+        if (vxyz3d > 0.5) /* mm/year */
+        {
+            vxyz_regional[0] /= 1000.0;
+            vxyz_regional[1] /= 1000.0;
+            vxyz_regional[2] /= 1000.0;
+        }
+        ret = 1;
+    }
+    return ret;
+}
