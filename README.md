@@ -3,15 +3,22 @@ Coordinate is a utility used by GEODNET to extract NOAA/NGS OPUS && NRCAN PPP IT
 
 # Coordinate Estimation Procedure of GEODNET Base Station
 ## New Station
-If a new station is online for 3 continuous hours, then we will collect 30s sample interval RINEX data and call NRCAN PPP<sup>1</sup> API. If the NRCAN PPP return to a reasonable solution (as shown as Table 1), then the station is added to the RTK service list. Otherwise, the same procedure will be repeated every hour using the last 3 hours' rinex data. For a new station, another NRCAN PPP solution will be achieved once it has a full day (in GPS time). The station coordinate of the base station will be updated based on the NRCAN PPP solution quality.
+When a new station is online and it will be marked as ONLINE as its status. After 3 hours' continuous online, the 30s sample interval RINEX data will be uploaded to NRCAN PPP<sup>1</sup> for precise point positioning. If the NRCAN PPP return to a reasonable solution (***3D Sigma in 95% < 0.05 m***), then the station is added to the RTK service list, the station status will change from ONLINE to ACTIVE. Otherwise, the same procedure will be repeated every hour using the last 3 hours' rinex data. For a new station, another NRCAN PPP solution will be achieved once it has a full day (in GPS time). The station coordinate of the base station will be updated based on the NRCAN PPP solution quality.
 
-Table 1. Solution to turn a new station status from ONLINE to ACTIVE  
-
+## Offline Station  
+If a station goes offline for ***more than 30s***, it will be marked as offline
 
 ## Relocated Station 
-If a station is online again after offline for more than 30 minutes, then the SPP (Standard Point Positioning) solution will be used to compare with the current PPP solution, if there is significant changes, it will be treated as a New Station<sup>2</sup>.  
+If a station is online again after offline for more than ***30 minutes***, it will be treated as a New Station, and NRCAN PPP will be used to get the new solution. If the new NRCAN PPP solution meet the requirement (***3D Sigma in 95% < 0.05 m***), the station status will switch from ONLINE to ACTIVE. Then an coordinate update strategy will be applied to determine which solution (new NRCAN PPP solution vs existing NRCAN PPP solution) will be used.
 
-Table 2. Solution to turn an offline station from ONLINE to ACTIVE    
+Table 1. Coordinate Update strategy for possible relocated stations
+|#|Condition1|Condition2|Solution Results|Station Relocated or not|
+|:---:|:---:|:---:|:---:|:---:|
+|1|3D sigma in 95% of existing solution >= 3D sigma in 95% of new solution|NONE|Use the new solution|NONE|
+|2|3D sigma in 95% of existing solution <  3D sigma in 95% of new solution|3D coordinate difference between existing and new solution > ( SQRT( SQ(3D sigma in 95% of existing solution) + SQ(3D sigma in 95% of new solution) )|Use the new solution|YES|
+|3|3D sigma in 95% of existing solution <  3D sigma in 95% of new solution|3D coordinate difference between existing and new solution <=( SQRT( SQ(3D sigma in 95% of existing solution) + SQ(3D sigma in 95% of new solution) )|Use existing solution|NO|
+
+It should be noted that SQRT = **SQ**uare **R**oo**T**, SQ = **SQ**uare.   
 
 ## Existing station
 The base station coorinate of all stations will be re-estimated every 15 days, and the station coordinate will be updated based on the NRCAN PPP solution quality. Thus the station coordinate should be always within 1 month of current epoch.  
