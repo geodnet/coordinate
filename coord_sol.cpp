@@ -564,15 +564,24 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
             {
                 if ((temp = strstr(buffer, "x:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_itrf2020[0] = atof(temp1 + 1);
+                    if (strstr(buffer, "vx:"))
+                        vxyz_itrf2020[0] = atof(temp1 + 1);
+                    else
+                        xyz_itrf2020[0] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_itrf2020[1] = atof(temp1 + 1);
+                    if (strstr(buffer, "vy:"))
+                        vxyz_itrf2020[1] = atof(temp1 + 1);
+                    else
+                        xyz_itrf2020[1] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_itrf2020[2] = atof(temp1 + 1);
+                    if (strstr(buffer, "vz:"))
+                        vxyz_itrf2020[2] = atof(temp1 + 1);
+                    else
+                        xyz_itrf2020[2] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "iar:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -630,7 +639,7 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
                 }
                 if ((temp = strstr(buffer, "vx:")) && (temp1 = strstr(temp, ":")))
                 {
-                    vxyz_itrf2020[0] = atof(temp1 + 1) / 1000.0;
+                    vxyz_itrf2020[0] = atof(temp1 + 1);
                 }
                 if (!strstr(buffer, "vy:") && (temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -638,7 +647,7 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
                 }
                 if ((temp = strstr(buffer, "vy:")) && (temp1 = strstr(temp, ":")))
                 {
-                    vxyz_itrf2020[1] = atof(temp1 + 1) / 1000.0;
+                    vxyz_itrf2020[1] = atof(temp1 + 1);
                 }
                 if (!strstr(buffer, "vz:") && (temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -646,7 +655,7 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
                 }
                 if ((temp = strstr(buffer, "vz:")) && (temp1 = strstr(temp, ":")))
                 {
-                    vxyz_itrf2020[2] = atof(temp1 + 1) / 1000.0;
+                    vxyz_itrf2020[2] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "name:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -673,17 +682,26 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
             }
             if (is_wgs84_found == 1)
             {
-                if (!strstr(buffer, "vx:") && (temp = strstr(buffer, "x:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "x:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_wgs84[0] = atof(temp1 + 1);
+                    if (strstr(buffer, "vx:"))
+                        vxyz_wgs84[0] = atof(temp1 + 1);
+                    else
+                        xyz_wgs84[0] = atof(temp1 + 1);
                 }
-                if (!strstr(buffer, "vy:") && (temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_wgs84[1] = atof(temp1 + 1);
+                    if (strstr(buffer, "vy:"))
+                        vxyz_wgs84[1] = atof(temp1 + 1);
+                    else
+                        xyz_wgs84[1] = atof(temp1 + 1);
                 }
-                if (!strstr(buffer, "vz:") && (temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_wgs84[2] = atof(temp1 + 1);
+                    if (strstr(buffer, "vz:"))
+                        vxyz_wgs84[2] = atof(temp1 + 1);
+                    else
+                        xyz_wgs84[2] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "name:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -711,17 +729,26 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
 
             if (is_regional_found == 1)
             {
-                if (!strstr(buffer, "vx:") && (temp = strstr(buffer, "x:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "x:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_regional[0] = atof(temp1 + 1);
+                    if (strstr(buffer, "vx:"))
+                        vxyz_regional[0] = atof(temp1 + 1);
+                    else
+                        xyz_regional[0] = atof(temp1 + 1);
                 }
-                if (!strstr(buffer, "vy:") && (temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "y:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_regional[1] = atof(temp1 + 1);
+                    if (strstr(buffer, "vy:"))
+                        vxyz_regional[1] = atof(temp1 + 1);
+                    else
+                        xyz_regional[1] = atof(temp1 + 1);
                 }
-                if (!strstr(buffer, "vz:") && (temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
+                if ((temp = strstr(buffer, "z:")) && (temp1 = strstr(temp, ":")))
                 {
-                    xyz_regional[2] = atof(temp1 + 1);
+                    if (strstr(buffer, "vz:"))
+                        vxyz_regional[2] = atof(temp1 + 1);
+                    else
+                        xyz_regional[2] = atof(temp1 + 1);
                 }
                 if ((temp = strstr(buffer, "name:")) && (temp1 = strstr(temp, ":")))
                 {
@@ -748,6 +775,32 @@ int coord_t::read_json_file(const char* fname, const char* stnname)
             }
             if (name.size() > 0 && is_itrf2020_found == 2 && is_itrf2020_2015_found == 2 && is_wgs84_found == 2 && is_regional_found == 2)
             {
+                if (code.length()<3)
+                {
+                    ecef2pos_(xyz_itrf2020, blh_itrf2020, RE_GRS80, FE_GRS80);
+                    get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
+                }
+                double vel3D = sqrt(vxyz_itrf2020[0]*vxyz_itrf2020[0]+vxyz_itrf2020[1]*vxyz_itrf2020[1]+vxyz_itrf2020[2]*vxyz_itrf2020[2]);
+                if (vel3D>0.5)
+                {
+                    vxyz_itrf2020[0] /= 1000.0;
+                    vxyz_itrf2020[1] /= 1000.0;
+                    vxyz_itrf2020[2] /= 1000.0;
+                }
+                double vel3D_r = sqrt(vxyz_regional[0]*vxyz_regional[0]+vxyz_regional[1]*vxyz_regional[1]+vxyz_regional[2]*vxyz_regional[2]);
+                if (vel3D_r>0.5)
+                {
+                    vxyz_regional[0] /= 1000.0;
+                    vxyz_regional[1] /= 1000.0;
+                    vxyz_regional[2] /= 1000.0;
+                }
+                double vel3D_wgs84 = sqrt(vxyz_wgs84[0]*vxyz_wgs84[0]+vxyz_wgs84[1]*vxyz_wgs84[1]+vxyz_wgs84[2]*vxyz_wgs84[2]);
+                if (vel3D_wgs84>0.5)
+                {
+                    vxyz_wgs84[0] /= 1000.0;
+                    vxyz_wgs84[1] /= 1000.0;
+                    vxyz_wgs84[2] /= 1000.0;
+                }
                 type = "NRCAN";
                 if (name == std::string(stnname))
                 {
