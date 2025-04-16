@@ -6,7 +6,7 @@ Coordinate is a utility used by GEODNET to extract NOAA/NGS OPUS && NRCAN PPP IT
 When a new station is online and it will be marked as ONLINE as its status. After 3 hours' continuous online, the 30s sample interval RINEX data will be uploaded to NRCAN PPP<sup>1</sup> for precise point positioning. If the NRCAN PPP return to a reasonable solution (***3D Sigma in 95% < 0.05 m***), then the station is added to the RTK service list, the station status will change from ONLINE to ACTIVE. Otherwise, the same procedure will be repeated every hour using the last 3 hours' rinex data. For a new station, another NRCAN PPP solution will be achieved once it has a full day (in GPS time). The station coordinate of the base station will be updated based on the NRCAN PPP solution quality.
 
 ## Offline Station  
-If a station goes offline for ***more than 30s***, it will be marked as offline
+If a station goes offline for ***more than 30 minutes***, it will be marked as offline
 
 ## Relocated Station 
 If a station is online again after offline for more than ***30 minutes***, it will be treated as a New Station, and NRCAN PPP will be used to get the new solution. If the new NRCAN PPP solution meet the requirement (***3D Sigma in 95% < 0.05 m***), the station status will switch from ONLINE to ACTIVE. Then an coordinate update strategy will be applied to determine which solution (new NRCAN PPP solution vs existing NRCAN PPP solution) will be used.
