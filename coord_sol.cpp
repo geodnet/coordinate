@@ -1150,10 +1150,10 @@ std ,0.0301,	 0.0422,	 0.0126,	 0.0249,	 0.0287,	 0.0503
         xyz_regional[2] +=-0.7230;
 #endif
     }
-    else if (code.find("TWN") != std::string::npos) /* ITRF2020(2023.0) */
+    else if (code.find("TWN") != std::string::npos) /* ITRF2020(2025.0) */
     {
-        /* output ITRF2020(2023.0) */
-        epoch_regional = !vel_flag ? epoch_itrf2020 : 2023.0;
+        /* output ITRF2020(2025.0) => change to 2025.0 (https://egnss.nlsc.gov.tw/HotNews.aspx) https://egnss.nlsc.gov.tw/content.aspx?i=20150625102013300 */
+        epoch_regional = !vel_flag ? epoch_itrf2020 : 2025.0;
         sprintf(buffer, "ITRF2020(%7.2f)", epoch_regional);
         coord_name_regional = std::string(buffer);
         /* predict to ITRF2020 2023.0 epoch */
