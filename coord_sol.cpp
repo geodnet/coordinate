@@ -115,7 +115,7 @@ int is_eu2_station(std::string code)
         code.find("BLR") != std::string::npos ||
         code.find("BIH") != std::string::npos ||
         code.find("FRO") != std::string::npos ||
-        code.find("GEO") != std::string::npos ||
+        //code.find("GEO") != std::string::npos ||
         code.find("GIB") != std::string::npos ||
         code.find("ISL") != std::string::npos ||
         code.find("IMN") != std::string::npos ||
@@ -947,6 +947,24 @@ int coord_t::convert_coord()
         /* output ITRF2008(2005.0) */
         epoch_regional = vel_flag ? 2005.0 : epoch_itrf2020;
         sprintf(buffer, "ITRF2008(%7.2f)", epoch_regional);
+        coord_name_regional = std::string(buffer);
+        /* convert ITRF2020 to ITRF2008 */
+        convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
+    }
+    /* Georgia Geodetic Datum
+    The Georgia Geodetic Datum (GGD) is based and aligned with the International
+    Terrestrial Reference System (ITRS). The ellipsoid associated with the datum is the
+    Geodetic Reference System 1980 (GRS80).
+    The relationship between the new datum and the ITRS is realized through the
+    ITRF2008/IGS08 coordinates for 12 CORS stations at epoch 2011.353 computed by
+    the Institute Geographique National (IGN) in France [IGN, 2011]. Hence, all points
+    coordinated in terms
+    */
+    else if (code.find("GEO") != std::string::npos) /* Georgia Geodetic Datum = ITRF2008(2011.353) */
+    {
+        /* output ITRF2008(2011.353) */
+        epoch_regional = vel_flag ? 2011.353 : epoch_itrf2020;
+        sprintf(buffer, "ITRF2008(%8.3f)", epoch_regional);
         coord_name_regional = std::string(buffer);
         /* convert ITRF2020 to ITRF2008 */
         convert_itrf2020_to_itrf2008(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
