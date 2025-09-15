@@ -18,6 +18,7 @@ void XYZ_to_NED(double lat, double lon, double* dxyz, double* dned);
 void cov_convert(double lat, double lon, double* rms0, double* rms1);
 int is_skip_year(int year);
 int day_of_year(int year, int mon, int day);
+int doytotime(int year, int doy, int *mon, int *day);
 double get_epoch(int year, int mon, int day);
 
 int parse_fields(char* const buffer, char** val, char key);

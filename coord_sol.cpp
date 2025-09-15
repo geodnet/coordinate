@@ -253,6 +253,33 @@ int day_of_year(int year, int mon, int day)
     return totalDay;
 }
 
+int doytotime(int year, int doy, int *mon, int *day) 
+{
+    int totalDay = doy;
+    int dayPerMon[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    int maxday = 0;
+
+    *mon = 0;
+    *day = 0;
+
+    for (int i=0;i<12;++i)
+    {
+        maxday = dayPerMon[i];
+        if (i==1 && is_skip_year(year)) maxday++;
+        if (doy<=maxday)
+        {
+            *mon = i+1;
+            *day = doy;
+            break;
+        }
+        doy -= dayPerMon[i];
+        if (i==1 && is_skip_year(year)) doy--;
+    }
+
+    return (*mon>0) ? 1 : 0;
+}
+
 double get_epoch(int year, int mon, int day)
 {
     int doy = day_of_year(year, mon, day);
