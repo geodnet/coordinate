@@ -479,6 +479,7 @@ coord_t::coord_t()
     vxyz_regional[0] = vxyz_regional[1] = vxyz_regional[2] = 0;
     vxyz_itrf2014[0] = vxyz_itrf2014[1] = vxyz_itrf2014[2] = 0;
     vxyz_wgs84[0] = vxyz_wgs84[1] = vxyz_wgs84[2] = 0;
+    dN = dE = dU = 0;
 }
 coord_t::coord_t(const coord_t &src)
 {
@@ -521,6 +522,10 @@ coord_t::coord_t(const coord_t &src)
     memcpy(vxyz_regional, src.vxyz_regional, sizeof(vxyz_regional));
     memcpy(vxyz_itrf2014, src.vxyz_itrf2014, sizeof(vxyz_itrf2014));
     memcpy(vxyz_wgs84, src.vxyz_wgs84, sizeof(vxyz_wgs84));
+
+    dN = src.dN;
+    dE = src.dE;
+    dU = src.dU;
 }
 void coord_t::reset()
 {
@@ -560,6 +565,8 @@ void coord_t::reset()
     vxyz_regional[0] = vxyz_regional[1] = vxyz_regional[2] = 0;
     vxyz_itrf2014[0] = vxyz_itrf2014[1] = vxyz_itrf2014[2] = 0;
     vxyz_wgs84[0] = vxyz_wgs84[1] = vxyz_wgs84[2] = 0;
+
+    dN = dE = dU = 0;
 }
 int coord_t::read_json_file(const char* fname, const char* stnname)
 {

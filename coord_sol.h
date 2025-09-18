@@ -70,26 +70,24 @@ struct coord_t
     double vxyz_regional[3];
     double vxyz_itrf2014[3];
     double vxyz_wgs84[3];
+    double dN;
+    double dE;
+    double dU;
     coord_t();
     ~coord_t() {};
     coord_t(const coord_t& src);
     void reset();
     bool operator==(const coord_t& obj)
     {
-        return name == obj.name && stime == obj.stime && type == obj.type;
+        //return name == obj.name && stime == obj.stime && type == obj.type;
+        return name == obj.name && fabs(epoch_itrf2020 - obj.epoch_itrf2020) < 0.0001;
     }
     bool operator< (const coord_t& obj)
     {
-        if (name == obj.name)
-            return name < obj.name;
-        else if (stime == obj.stime)
-        {
-            return type < obj.type;
-        }
-        else
-        {
-            return stime < obj.stime;
-        }
+        if (*this == obj)
+            return false;
+        else 
+            return name==obj.name ? epoch_itrf2020 < obj.epoch_itrf2020 : name < obj.name;
     }
     std::string get_date_time() const
     {
