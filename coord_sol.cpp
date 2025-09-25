@@ -917,6 +917,10 @@ int coord_t::convert_coord()
     /* convert the other coordinate from ITRF2020 and VEL + country code */
     int ret = 0;
 
+#ifdef _WIN32
+    return ret;
+#endif
+
     double rms3D = sqrt(sigma95_xyz[0] * sigma95_xyz[0] + sigma95_xyz[1] * sigma95_xyz[1] + sigma95_xyz[2] * sigma95_xyz[2]);
     if (rms3D < 1.0e-6 || name.length() == 0 || fabs(xyz_itrf2020[0]) < 0.00001 || fabs(xyz_itrf2020[1]) < 0.00001 || fabs(xyz_itrf2020[2]) < 0.00001 || fabs(epoch_itrf2020) < 0.00001 || coord_name_itrf2020.c_str() == 0)
     {
@@ -929,6 +933,8 @@ int coord_t::convert_coord()
     {
         get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
     }
+
+    if (code.length() < 3) return 0;
 
     int vel_flag = sqrt(vxyz_itrf2020[0] * vxyz_itrf2020[0] + vxyz_itrf2020[1] * vxyz_itrf2020[1] + vxyz_itrf2020[2] * vxyz_itrf2020[2]) > 0.0001;
 
@@ -943,6 +949,8 @@ int coord_t::convert_coord()
             vel_flag = sqrt(vxyz_itrf2020[0] * vxyz_itrf2020[0] + vxyz_itrf2020[1] * vxyz_itrf2020[1] + vxyz_itrf2020[2] * vxyz_itrf2020[2]) > 0.0001;
         }        
     }
+
+    if (!vel_flag) return 0;
 
     char buffer[255] = { 0 };
 
@@ -1303,13 +1311,11 @@ std ,0.0301,	 0.0422,	 0.0126,	 0.0249,	 0.0287,	 0.0503
         convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz_itrf2020, epoch_itrf2020, epoch_regional, xyz_regional, vxyz_regional);
     }
 
-
     printf("SOLU ,%s,%14s,%s,%s,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%s,%20s,%10.5f,%14.4f,%14.4f,%14.4f,%10.6f,%10.6f,%10.6f,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%10.6f,%10.6f,%10.6f\n"
         , code.c_str(), name.c_str(), stime.c_str(), ctime.c_str()
         , coord_name_itrf2020.c_str(), epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], amb_fix_rate, sigma95_xyz[0], sigma95_xyz[1], sigma95_xyz[2]
         , vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], fname.c_str()
         , coord_name_regional.c_str(), epoch_regional, xyz_regional[0], xyz_regional[1], xyz_regional[2], vxyz_regional[0], vxyz_regional[1], vxyz_regional[2], coord_name_wgs84.c_str(), epoch_wgs84, xyz_wgs84[0], xyz_wgs84[1], xyz_wgs84[2], vxyz_wgs84[0], vxyz_wgs84[1], vxyz_wgs84[2]);
-
 
     ret = 1;
 
@@ -1368,6 +1374,17 @@ int coord_t::read_from_opus_file(const char* opusfname)
             remove_lead(temp + 5);
             char* temp11 = strchr(temp + 5, ' ');
             if (temp11) temp11[0] = '\0';
+            temp11 = strchr(temp + 5, '.');
+            if (temp11) temp11[0] = '\0';
+            num = parse_fields(temp + 5, val, '_');
+            if (num > 1)
+            {
+                name = std::string(val[1]);
+            }
+            else
+            {
+                name = std::string(val[0]);
+            }
             //fname = std::string(temp + 5);
         }
         else if ((temp = strstr(buffer, "DATE:")))
@@ -1446,28 +1463,22 @@ int coord_t::read_from_opus_file(const char* opusfname)
         else if ((temp = strstr(buffer, "START:")))
         {
             remove_lead(temp + 6);
-            yy = 0;
-            mm = 0;
-            dd = 0;
-            num = sscanf(temp + 6, "%i/%i/%i", &yy, &mm, &dd);
+            num = parse_fields(temp + 6, val, '/');
             if (num > 2)
             {
                 char stime_s[20] = { 0 };
-                sprintf(stime_s, "%04i-%02i-%02i", yy, mm, dd);
+                sprintf(stime_s, "%04i-%02i-%02i", atoi(val[0]), atoi(val[1]), atoi(val[2]));
                 stime = std::string(stime_s);
             }
         }
         else if ((temp = strstr(buffer, "STOP:")))
         {
             remove_lead(temp + 5);
-            yy = 0;
-            mm = 0;
-            dd = 0;
-            num = sscanf(temp + 6, "%i/%i/%i", &yy, &mm, &dd);
+            num = parse_fields(temp + 5, val, '/');
             if (num > 2)
             {
                 char etime_s[20] = { 0 };
-                sprintf(etime_s, "%04i-%02i-%02i", yy, mm, dd);
+                sprintf(etime_s, "%04i-%02i-%02i", atoi(val[0]), atoi(val[1]), atoi(val[2]));
                 etime = std::string(etime_s);
             }
         }
@@ -1488,7 +1499,14 @@ int coord_t::read_from_opus_file(const char* opusfname)
                 temp[0] = '\0';
             }
             remove_lead(buffer + 55);
-            coord_name_itrf2014 = std::string(buffer + 55); buffer[55] = '\0';
+            if (strstr(buffer + 55, "ITRF2014"))
+            {
+                coord_name_itrf2014 = std::string(buffer + 55); buffer[55] = '\0';
+            }
+            else
+            {
+                coord_name_itrf2020 = std::string(buffer + 55); buffer[55] = '\0';
+            }
             temp = strstr(buffer + 11, "(EPOCH:");
             if (temp)
             {
@@ -1513,130 +1531,113 @@ int coord_t::read_from_opus_file(const char* opusfname)
                 coord_name_regional = std::string(buffer + 11);
             }
             sprintf(buffer, "(%7.2f)", epoch_itrf2020);
-            coord_name_itrf2014 += std::string(buffer);
+            if (coord_name_itrf2014.length()>0)
+                coord_name_itrf2014 += std::string(buffer);
+            else 
+                coord_name_itrf2020 += std::string(buffer);
             sprintf(buffer, "(%7.2f)", epoch_regional);
             coord_name_regional += std::string(buffer);
         }
         else if ((temp = strstr(buffer, "X:")) && strstr(buffer, "(m)"))
         {
             xyz_regional[0] = atof(temp + 2);
-            xyz_itrf2014[0] = atof(temp + 33);
+            if (coord_name_itrf2014.length()>0)
+                xyz_itrf2014[0] = atof(temp + 33);
+            else
+                xyz_itrf2020[0] = atof(temp + 33);
             sigma95_xyz[0] = 2.0 * atof(temp + 22);
         }
         else if ((temp = strstr(buffer, "Y:")) && strstr(buffer, "(m)"))
         {
             xyz_regional[1] = atof(temp + 2);
-            xyz_itrf2014[1] = atof(temp + 33);
+            if (coord_name_itrf2014.length() > 0)
+                xyz_itrf2014[1] = atof(temp + 33);
+            else
+                xyz_itrf2020[1] = atof(temp + 33);
             sigma95_xyz[1] = 2.0 * atof(temp + 22);
         }
         else if ((temp = strstr(buffer, "Z:")) && strstr(buffer, "(m)"))
         {
             xyz_regional[2] = atof(temp + 2);
-            xyz_itrf2014[2] = atof(temp + 33);
+            if (coord_name_itrf2014.length() > 0)
+                xyz_itrf2014[2] = atof(temp + 33);
+            else
+                xyz_itrf2020[2] = atof(temp + 33);
             sigma95_xyz[2] = 2.0 * atof(temp + 22);
         }
         else if ((temp = strstr(buffer, "LAT:")) && strstr(buffer, "(m)"))
         {
             blh_regional[0] = (atof(temp + 4) + atof(temp + 9) / 60.0 + atof(temp + 12) / 3600.0) * D2R;
-            blh_itrf2014[0] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
+            if (coord_name_itrf2014.length() > 0)
+                blh_itrf2014[0] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
+            else
+                blh_itrf2020[0] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
             sigma95_NEU[0] = 2.0 * atof(temp + 24);
         }
         else if ((temp = strstr(buffer, "LON:")) && strstr(buffer, "(m)") && strstr(buffer, "E"))
         {
             blh_regional[1] = (atof(temp + 4) + atof(temp + 9) / 60.0 + atof(temp + 12) / 3600.0) * D2R;
-            blh_itrf2014[1] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
+            if (coord_name_itrf2014.length() > 0)
+                blh_itrf2014[1] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
+            else
+                blh_itrf2020[1] = (atof(temp + 35) + atof(temp + 45) / 60.0 + atof(temp + 48) / 3600.0) * D2R;
             sigma95_NEU[1] = 2.0 * atof(temp + 24);
         }
         else if ((temp = strstr(buffer, "HGT:")) && strstr(buffer, "(m)") && strstr(buffer, "EL"))
         {
             blh_regional[2] = atof(temp + 4);
-            blh_itrf2014[2] = atof(temp + 35);
+            if (coord_name_itrf2014.length() > 0)
+                blh_itrf2014[2] = atof(temp + 35);
+            else
+                blh_itrf2020[2] = atof(temp + 35);
             sigma95_NEU[2] = 2.0 * atof(temp + 24);
         }
     }
 
+    int is_itrf2014 = !(fabs(xyz_itrf2014[0]) < 0.1 || fabs(xyz_itrf2014[1]) < 0.1 || fabs(xyz_itrf2014[2]) < 0.1 || fabs(blh_itrf2014[0]) < 0.00001 || fabs(blh_itrf2014[1]) < 0.000001 || epoch_itrf2020 < 0.001);
+    int is_itrf2020 = !(fabs(xyz_itrf2020[0]) < 0.1 || fabs(xyz_itrf2020[1]) < 0.1 || fabs(xyz_itrf2020[2]) < 0.1 || fabs(blh_itrf2020[0]) < 0.00001 || fabs(blh_itrf2020[1]) < 0.000001 || epoch_itrf2020 < 0.001);
+    int is_regional = !(fabs(xyz_regional[0]) < 0.1 || fabs(xyz_regional[1]) < 0.1 || fabs(xyz_regional[2]) < 0.1 || epoch_regional < 0.001);
 
-    if (fabs(xyz_itrf2014[0]) < 0.1 || fabs(xyz_itrf2014[1]) < 0.1 || fabs(xyz_itrf2014[2]) < 0.1 || fabs(blh_itrf2014[0]) < 0.00001 || fabs(blh_itrf2014[1]) < 0.000001 ||
-        fabs(xyz_regional[0]) < 0.1 || fabs(xyz_regional[1]) < 0.1 || fabs(xyz_regional[2]) < 0.1 || epoch_itrf2020 < 0.001)
-    {
-    }
-    else
+    if (is_itrf2014 && !is_itrf2020)
     {
         double vxyz[3] = { 0 }, xyz2[3] = { 0 }, vxyz2[3] = { 0 };
-        double dt = epoch_itrf2020 - epoch_regional;
-
-        int vel_flag = 0;
-
-        if (coord_name_regional.find("ITRF2014") != std::string::npos && fabs(dt)>0.001)
-        {
-            vxyz[0] = (xyz_itrf2014[0] - xyz_regional[0]) / dt;
-            vxyz[1] = (xyz_itrf2014[1] - xyz_regional[1]) / dt;
-            vxyz[2] = (xyz_itrf2014[2] - xyz_regional[2]) / dt;
-            vel_flag = 1;
-        }
-
-        convert_itrf2014_to_itrf2020(xyz_itrf2014, vxyz, epoch_itrf2014, epoch_itrf2020, xyz_itrf2020, vxyz2);
-
-        if (vel_flag)
-        {
-            vxyz_itrf2020[0] = vxyz2[0];
-            vxyz_itrf2020[1] = vxyz2[1];
-            vxyz_itrf2020[2] = vxyz2[2];
-        }
-        else if (coord_name_regional.find("NAD83(2011)") != std::string::npos && fabs(dt) > 0.001)
-        {
-            vxyz[0] = vxyz[1] = vxyz[2] = 0;
-            convert_nad_2011_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
-            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
-            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
-            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
-            vel_flag = 1;
-        }
-        else if (coord_name_regional.find("NAD83(PA11)") != std::string::npos && fabs(dt) > 0.001)
-        {
-            vxyz[0] = vxyz[1] = vxyz[2] = 0;
-            convert_nad_pa11_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
-            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
-            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
-            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
-            vel_flag = 1;
-        }
-        else if (coord_name_regional.find("NAD83(MA11)") != std::string::npos && fabs(dt) > 0.001)
-        {
-            vxyz[0] = vxyz[1] = vxyz[2] = 0;
-            convert_nad_ma11_to_itrf2020(xyz_regional, vxyz, epoch_regional, epoch_regional, xyz2, vxyz2);
-            vxyz_itrf2020[0] = (xyz_itrf2020[0] - xyz2[0]) / dt;
-            vxyz_itrf2020[1] = (xyz_itrf2020[1] - xyz2[1]) / dt;
-            vxyz_itrf2020[2] = (xyz_itrf2020[2] - xyz2[2]) / dt;
-            vel_flag = 1;
-        }
-
-        ecef2pos_(xyz_itrf2020, blh_itrf2020, RE_GRS80, FE_GRS80);
-
-        get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
-
-        vxyz[0] = vxyz[1] = vxyz[2] = 0;
-        if (get_station_vel(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz))
-        {
-            if (vel_flag)
-            {
-                FILE* fTMP = fopen("tmp.csv", "a");
-                if (fTMP) fprintf(fTMP, "%s,%s,%14.9f,%14.9f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f\n", name.c_str(), code.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], vxyz[0], vxyz[1], vxyz[2]);
-                if (fTMP) fclose(fTMP);
-            }
-            vxyz_itrf2020[0] = vxyz[0];
-            vxyz_itrf2020[1] = vxyz[1];
-            vxyz_itrf2020[2] = vxyz[2];
-        }
-
+        convert_itrf2014_to_itrf2020(xyz_itrf2014, vxyz, epoch_itrf2020, epoch_itrf2020, xyz_itrf2020, vxyz2);
         sprintf(buffer, "ITRF2020(%7.2f)", epoch_itrf2020);
         coord_name_itrf2020 = std::string(buffer);
+        is_itrf2020 = 1;
+    }
+    else if (!is_itrf2014 && is_itrf2020)
+    {
+        double vxyz[3] = { 0 }, xyz2[3] = { 0 }, vxyz2[3] = { 0 };
+        convert_itrf2020_to_itrf2014(xyz_itrf2020, vxyz, epoch_itrf2020, epoch_itrf2020, xyz_itrf2014, vxyz2);
+        sprintf(buffer, "ITRF2014(%7.2f)", epoch_itrf2020);
+        coord_name_itrf2014 = std::string(buffer);
+        is_itrf2014 = 1;
+    }
+    if (is_itrf2020)
+    {
 
+        //ecef2pos_(xyz_itrf2020, blh_itrf2020, RE_GRS80, FE_GRS80);
+
+        //get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
+
+        //if (get_station_vel(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz_itrf2020))
+        {
+        }
+
+        double rms3D = sqrt(sigma95_xyz[0] * sigma95_xyz[0] + sigma95_xyz[1] * sigma95_xyz[1] + sigma95_xyz[2] * sigma95_xyz[2]);
+
+#if 0
         printf("OPUS ,%s,%14s,%s,%s,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%s,%20s,%10.5f,%14.4f,%14.4f,%14.4f,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%10.6f\n"
             , code.c_str(), name.c_str(), stime.c_str(), ctime.c_str()
             , coord_name_itrf2020.c_str(), epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], amb_fix_rate, sigma95_xyz[0], sigma95_xyz[1], sigma95_xyz[2]
             , vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], fname.c_str()
             , coord_name_regional.c_str(), epoch_regional, xyz_regional[0], xyz_regional[1], xyz_regional[2], coord_name_itrf2014.c_str(), epoch_itrf2020, xyz_itrf2014[0], xyz_itrf2014[1], xyz_itrf2014[2], rms);
+#endif
+        printf("OPUS ,%14s,%s,%s,%17s,%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%20s,%10.5f,%14.4f,%14.4f,%14.4f,%10.4f,%10.4f,%s\n"
+            , name.c_str(), stime.c_str(), ctime.c_str()
+            , coord_name_itrf2020.c_str(), epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], amb_fix_rate, sigma95_xyz[0], sigma95_xyz[1], sigma95_xyz[2]
+            , coord_name_regional.c_str(), epoch_regional, xyz_regional[0], xyz_regional[1], xyz_regional[2], rms, rms3D, fname.c_str());
 
         ret = 1;
 
