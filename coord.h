@@ -75,6 +75,10 @@ void convert_nad_ma11_to_itrf2020(double* xyz_nad_2011, double* vxyz_nad_2011, d
 void ecef2pos_(const double *r, double *pos, double a, double f);
 void pos2ecef_(const double *pos, double *r, double a, double f);
 
+void lat2ned(double lat, double* lat2north, double* lat2east);
+void blh2cen(double lat, double lon, double* cen);
+void ned2xyz(double lat, double lon, double* dned, double* dxyz);
+void xyz2ned(double lat, double lon, double* dxyz, double* dned);
 
 #ifdef __cplusplus
 }

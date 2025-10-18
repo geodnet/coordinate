@@ -871,3 +871,44 @@ extern void pos2ecef_(const double *pos, double *r, double a, double f)
     r[1]=(v+pos[2])*cosp*sinl;
     r[2]=(v*(1.0-e2)+pos[2])*sinp;
 }
+
+extern void lat2ned(double lat, double* lat2north, double* lat2east)
+{
+    double f_WGS84 = (1.0 / 298.257223563);
+    double e2WGS84 = (2.0 * f_WGS84 - f_WGS84 * f_WGS84);
+    double slat = sin(lat);
+    double clat = cos(lat);
+    double one_e2_slat2 = 1.0 - e2WGS84 * slat * slat;
+    double Rn = 6378137.0 / sqrt(one_e2_slat2);
+    double Rm = Rn * (1.0 - e2WGS84) / (one_e2_slat2);
+    *lat2north = Rm;
+    *lat2east = Rn * clat;
+}
+extern void blh2cen(double lat, double lon, double *c)
+{
+    c[0] = -sin(lat) * cos(lon);
+    c[1] = -sin(lon);
+    c[2] = -cos(lat) * cos(lon);
+    c[3] = -sin(lat) * sin(lon);
+    c[4] = cos(lon);
+    c[5] = -cos(lat) * sin(lon);
+    c[6] = cos(lat);
+    c[7] = 0.0;
+    c[8] = -sin(lat);
+}
+extern void ned2xyz(double lat, double lon, double* dned, double* dxyz)
+{
+    double c[9] = { 0 };
+    blh2cen(lat, lon, c);
+    dxyz[0] = c[0] * dned[0] + c[1] * dned[1] + c[2] * dned[2];
+    dxyz[1] = c[3] * dned[0] + c[4] * dned[1] + c[5] * dned[2];
+    dxyz[2] = c[6] * dned[0] + c[7] * dned[1] + c[8] * dned[2];
+}
+extern void xyz2ned(double lat, double lon, double* dxyz, double* dned)
+{
+    double c[9] = { 0 };
+    blh2cen(lat, lon, c);
+    dned[0] = c[0] * dxyz[0] + c[3] * dxyz[1] + c[6] * dxyz[2];
+    dned[1] = c[1] * dxyz[0] + c[4] * dxyz[1] + c[7] * dxyz[2];
+    dned[2] = c[2] * dxyz[0] + c[5] * dxyz[1] + c[8] * dxyz[2];
+}
