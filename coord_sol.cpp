@@ -1851,19 +1851,11 @@ int coord_t::read_from_nrcan_file(const char* nrcanfname)
 
         get_station_code(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, code);
 
-        double vxyz[3] = { 0 };
-        if (get_station_vel(name.c_str(), blh_itrf2020[0] * R2D, blh_itrf2020[1] * R2D, vxyz))
-        {
-            vxyz_itrf2020[0] = vxyz[0];
-            vxyz_itrf2020[1] = vxyz[1];
-            vxyz_itrf2020[2] = vxyz[2];
-        }
-
         sprintf(buffer, "ITRF2020(%7.2f)", epoch_itrf2020);
         coord_name_itrf2020 = std::string(buffer);
 
-        printf("NRCAN,%s,%14s,%s,%s,ITRF2020(%7.2f),%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%s\n"
-            , code.c_str(), name.c_str(), stime.c_str(), ctime.c_str(), epoch_itrf2020, epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], amb_fix_rate, sigma95_xyz[0], sigma95_xyz[1], sigma95_xyz[2], vxyz_itrf2020[0], vxyz_itrf2020[1], vxyz_itrf2020[2], fname.c_str());
+        printf("NRCAN,%s,%14s,%s,%s,ITRF2020(%7.2f),%10.5f,%14.4f,%14.4f,%14.4f,%6.2f,%10.6f,%10.6f,%10.6f,%s\n"
+            , code.c_str(), name.c_str(), stime.c_str(), ctime.c_str(), epoch_itrf2020, epoch_itrf2020, xyz_itrf2020[0], xyz_itrf2020[1], xyz_itrf2020[2], amb_fix_rate, sigma95_xyz[0], sigma95_xyz[1], sigma95_xyz[2], fname.c_str());
 
         ret = 1;
 

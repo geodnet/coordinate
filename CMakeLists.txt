@@ -1,3 +1,5 @@
+# cmake --build . --config Release
+
 cmake_minimum_required(VERSION 3.16)
 project(coordinate)
 
@@ -11,4 +13,8 @@ coord_sol.h
 coord_sol.cpp
     )
 
-target_link_libraries(coordinate m)
+if(WIN32)
+    target_link_libraries(coordinate Winmm.lib)
+else()
+    target_link_libraries(coordinate m)
+endif()

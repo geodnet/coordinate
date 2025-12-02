@@ -26,7 +26,6 @@ std::string get_current_date_string();
 std::string get_current_time_string();
 
 int get_station_code(const char* name, double lat_deg, double lon_deg, std::string& code);
-int get_station_vel(const char* name, double lat_deg, double lon_deg, double* vxyz);
 
 int remove_lead(char* buffer);
 
