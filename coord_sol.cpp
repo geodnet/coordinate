@@ -871,7 +871,7 @@ int coord_t::read_scsv_file(char* buffer)
     if (temp) temp[0] = '\0';
     int num = parse_fields(buffer, val, ',');
     int loc = 0;
-    if (num > 17)
+    if (num > 14)
     {
         for (int i = 0; i < num; ++i)
             remove_lead(val[i]);
@@ -890,9 +890,9 @@ int coord_t::read_scsv_file(char* buffer)
         sigma95_xyz[0] = atof(val[loc++]);
         sigma95_xyz[1] = atof(val[loc++]);
         sigma95_xyz[2] = atof(val[loc++]);
-        vxyz_itrf2020[0] = atof(val[loc++]);
-        vxyz_itrf2020[1] = atof(val[loc++]);
-        vxyz_itrf2020[2] = atof(val[loc++]);
+        // vxyz_itrf2020[0] = atof(val[loc++]);
+        // vxyz_itrf2020[1] = atof(val[loc++]);
+        // vxyz_itrf2020[2] = atof(val[loc++]);
         fname = std::string(val[loc++]);
         if (strstr(val[0], "OPUS") && num > 28)
         {

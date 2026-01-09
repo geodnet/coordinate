@@ -76,12 +76,12 @@ struct coord_t
     ~coord_t() {};
     coord_t(const coord_t& src);
     void reset();
-    bool operator==(const coord_t& obj)
+    bool operator==(const coord_t& obj) const
     {
         //return name == obj.name && stime == obj.stime && type == obj.type;
         return name == obj.name && fabs(epoch_itrf2020 - obj.epoch_itrf2020) < 0.0001;
     }
-    bool operator< (const coord_t& obj)
+    bool operator< (const coord_t& obj) const
     {
         if (*this == obj)
             return false;
