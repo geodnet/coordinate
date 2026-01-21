@@ -95,6 +95,14 @@ struct coord_t
             date_time = date_time.substr(0, 24);
         return date_time;
     }
+    double rms3D() const
+    {
+        return sqrt(sigma95_xyz[0] * sigma95_xyz[0] + sigma95_xyz[1] * sigma95_xyz[1] + sigma95_xyz[2] * sigma95_xyz[2]);
+    }
+    bool valid() const
+    {
+        return !(fabs(xyz_itrf2020[0]) < 0.001 || fabs(xyz_itrf2020[1]) < 0.001 || fabs(xyz_itrf2020[2]) < 0.001 || epoch_itrf2020 < 0.0001) && rms3D() < 0.0001;
+    }
     int read_json_file(const char* fname, const char* stnname);
     int read_scsv_file(char* buffer);
     int convert_coord();
